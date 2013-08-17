@@ -44,21 +44,21 @@ import java.util.HashSet;
 /**
  * A fully multi-threaded tftp server.  Can handle multiple clients at the same time. Implements RFC 1350 and
  * wrapping block numbers for large file support.
- * 
- * To launch, just create an instance of the class.  An IOException will be thrown if the server fails to start 
- * for reasons such as port in use, port denied, etc. 
- * 
+ *
+ * To launch, just create an instance of the class.  An IOException will be thrown if the server fails to start
+ * for reasons such as port in use, port denied, etc.
+ *
  * To stop, use the shutdown method.
- * 
+ *
  * To check to see if the server is still running (or if it stopped because of an error), call the isRunning() method.
- * 
+ *
  * @author <A HREF="mailto:daniel.armbrust@gmail.com">Dan Armbrust</A>
  */
 
 public class TFTPBaseServer implements Runnable
 {
 	private Logger log = Logger.getLogger(TFTPBaseServer.class);
-	
+
 	private final HashSet<TFTPTransfer> transfers_ = new HashSet<TFTPTransfer>();
 	private volatile boolean shutdown_ = false;
 	private TFTP serverTftp_;
@@ -67,18 +67,18 @@ public class TFTPBaseServer implements Runnable
 
 	private int port_;
 	private Exception serverException = null;
-	
+
 	private int maxTimeoutRetries_ = 3;
 	private int socketTimeout_;
 
 	/**
-	 * Start a TFTP Server on the default port (69).  Gets and Puts occur in the specified directory.  
-	 * 
+	 * Start a TFTP Server on the default port (69).  Gets and Puts occur in the specified directory.
+	 *
 	 * The server will start in another thread, allowing this constructor to return immediately.
-	 * 
-	 * If a get or a put comes in with a relative path that tries to get outside of the serverDirectory, 
+	 *
+	 * If a get or a put comes in with a relative path that tries to get outside of the serverDirectory,
 	 * then the get or put will be denied.
-	 * 
+	 *
 	 * GET_ONLY mode only allows gets, PUT_ONLY mode only allows puts, and GET_AND_PUT allows both.
 	 *
 	 * @param fileNameMapper An abstraction for the file system
@@ -88,17 +88,17 @@ public class TFTPBaseServer implements Runnable
 	{
         this(fileNameMapper, 69);
 	}
-	
+
 	/**
-	 * Start a TFTP Server on the specified port.  Gets and Puts occur in the specified directory. 
-	 * 
+	 * Start a TFTP Server on the specified port.  Gets and Puts occur in the specified directory.
+	 *
 	 * The server will start in another thread, allowing this constructor to return immediately.
-	 * 
-	 * If a get or a put comes in with a relative path that tries to get outside of the serverDirectory, 
+	 *
+	 * If a get or a put comes in with a relative path that tries to get outside of the serverDirectory,
 	 * then the get or put will be denied.
-	 * 
+	 *
 	 * GET_ONLY mode only allows gets, PUT_ONLY mode only allows puts, and GET_AND_PUT allows both.
-	 * 
+	 *
 	 * @param fileNameMapper An abstraction for the file system
      * @param port The IP port to use
      * @throws IOException If the server could not open the port
@@ -109,7 +109,7 @@ public class TFTPBaseServer implements Runnable
         port_ = port;
 		launch();
 	}
-	
+
 	/**
 	 * Set the max number of retries in response to a timeout.  Default 3.  Min 0.
 	 * @param retries Number of retries
@@ -122,15 +122,15 @@ public class TFTPBaseServer implements Runnable
 		}
 		maxTimeoutRetries_ = retries;
 	}
-	
+
 	/**
 	 * Get the current value for maxTimeoutRetries
 	 */
 	public int getMaxTimeoutRetries()
 	{
-		return maxTimeoutRetries_; 
+		return maxTimeoutRetries_;
 	}
-	
+
 	/**
 	 * Set the socket timeout in milliseconds used in transfers.  Defaults to the value here:
 	 * http://commons.apache.org/net/apidocs/org/apache/commons/net/tftp/TFTP.html#DEFAULT_TIMEOUT
@@ -145,7 +145,7 @@ public class TFTPBaseServer implements Runnable
 		}
 		socketTimeout_ = timeout;
 	}
-	
+
 	/**
 	 * The current socket timeout used during transfers in milliseconds.
 	 */
@@ -153,16 +153,16 @@ public class TFTPBaseServer implements Runnable
 	{
 		return socketTimeout_;
 	}
-	
+
 	/*
 	 * start the server, throw an error if it can't start.
 	 */
 	private void launch() throws IOException
 	{
 		log.debug("Starting TFTP Server on port " + port_ + ".");
-		
+
 		serverTftp_ = new TFTP();
-		
+
 		//This is the value used in response to each client.
 		socketTimeout_ = serverTftp_.getDefaultTimeout();
 
@@ -170,7 +170,7 @@ public class TFTPBaseServer implements Runnable
 		serverTftp_.setDefaultTimeout(0);
 
 		serverTftp_.open(port_);
-		
+
 		Thread go = new Thread(this, "TFTPServer");
 		go.setDaemon(true);
 		go.start();
@@ -182,11 +182,11 @@ public class TFTPBaseServer implements Runnable
 		shutdown();
         super.finalize();
 	}
-	
+
 	/**
 	 * check if the server thread is still running.
 	 * @return true if running, false if stopped.
-	 * @throws Exception throws the exception that stopped the server if the server is stopped from an exception. 
+	 * @throws Exception throws the exception that stopped the server if the server is stopped from an exception.
 	 */
 	public boolean isRunning() throws Exception
 	{
@@ -249,7 +249,7 @@ public class TFTPBaseServer implements Runnable
                 aTransfers_.shutdown();
             }
 		}
-		
+
 		try
 		{
 			serverTftp_.close();
@@ -360,7 +360,7 @@ public class TFTPBaseServer implements Runnable
 					transferTftp_.bufferedSend(new TFTPErrorPacket(trrp.getAddress(), trrp.getPort(), TFTPErrorPacket.ILLEGAL_OPERATION, "Read not allowed by server."));
 					return;
 				}
-				
+
 				try
 				{
                     InputStream inputStream = fileNameMapper_.openInputStream(trrp.getFilename());
@@ -392,12 +392,13 @@ public class TFTPBaseServer implements Runnable
 				boolean sendNext = true;
 
 				int readLength = TFTPDataPacket.MAX_DATA_LENGTH;
-				
+
 				TFTPDataPacket lastSentData = null;
 
 				// We are reading a file, so when we read less than the
 				// requested bytes, we know that we are at the end of the file.
-				while (readLength == TFTPDataPacket.MAX_DATA_LENGTH && !shutdown_)
+
+                while (readLength == TFTPDataPacket.MAX_DATA_LENGTH && !shutdown_)
 				{
 					if (sendNext)
 					{
@@ -406,7 +407,7 @@ public class TFTPBaseServer implements Runnable
 						{
 							readLength = 0;
 						}
-						
+
 						lastSentData = new TFTPDataPacket(trrp.getAddress(), trrp.getPort(), block, temp, 0, readLength);
 						transferTftp_.bufferedSend(lastSentData);
 					}
@@ -414,7 +415,7 @@ public class TFTPBaseServer implements Runnable
 					answer = null;
 
 					int timeoutCount = 0;
-					
+
 					while (!shutdown_ && (answer == null || !answer.getAddress().equals(trrp.getAddress()) || answer.getPort() != trrp.getPort()))
 					{
 						// listen for an answer.
@@ -455,9 +456,9 @@ public class TFTPBaseServer implements Runnable
 						if (ack.getBlockNumber() != block)
 						{
 							/*
-							 * The origional tftp spec would have called on us to resend the previous data here, 
+							 * The origional tftp spec would have called on us to resend the previous data here,
 							 * however, that causes the SAS Syndrome. http://www.faqs.org/rfcs/rfc1123.html section 4.2.3.1
-							 * The modified spec says that we ignore  a duplicate ack.  If the packet was really lost, we will 
+							 * The modified spec says that we ignore  a duplicate ack.  If the packet was really lost, we will
 							 * time out on receive, and resend the previous data at that point.
 							 */
 							sendNext = false;
@@ -491,7 +492,7 @@ public class TFTPBaseServer implements Runnable
 				}
 			}
 		}
-		
+
 		/*
 		 * handle a tftp write request.
 		 */
@@ -505,10 +506,10 @@ public class TFTPBaseServer implements Runnable
 					transferTftp_.bufferedSend(new TFTPErrorPacket(twrp.getAddress(), twrp.getPort(), TFTPErrorPacket.ILLEGAL_OPERATION, "Write not allowed by server."));
 					return;
 				}
-				
+
 				int lastBlock = 0;
 				String fileName = twrp.getFilename();
-				
+
 				try
 				{
                     OutputStream outputStream = fileNameMapper_.openOutputStream(fileName);
@@ -519,7 +520,7 @@ public class TFTPBaseServer implements Runnable
 						return;
 					}
 					bos = new BufferedOutputStream(outputStream);
-					
+
 					if (twrp.getMode() == TFTP.NETASCII_MODE)
 					{
 						bos = new FromNetASCIIOutputStream(bos);
@@ -530,17 +531,17 @@ public class TFTPBaseServer implements Runnable
 					transferTftp_.bufferedSend(new TFTPErrorPacket(twrp.getAddress(), twrp.getPort(), TFTPErrorPacket.UNDEFINED, e.getMessage()));
 					return;
 				}
-				
+
 				TFTPAckPacket lastSentAck = new TFTPAckPacket(twrp.getAddress(), twrp.getPort(), 0);
 				transferTftp_.bufferedSend(lastSentAck);
-				
+
 				while (true)
 				{
 					//get the response - ensure it is from the right place.
 					TFTPPacket dataPacket = null;
-					
+
 					int timeoutCount = 0;
-					
+
 					while (!shutdown_ && (dataPacket == null || !dataPacket.getAddress().equals(twrp.getAddress()) || dataPacket.getPort() != twrp.getPort()))
 					{
 						// listen for an answer.
@@ -550,7 +551,7 @@ public class TFTPBaseServer implements Runnable
 							log.debug("TFTP Server ignoring message from unexpected source.");
 							transferTftp_.bufferedSend(new TFTPErrorPacket(dataPacket.getAddress(), dataPacket.getPort(), TFTPErrorPacket.UNKNOWN_TID, "Unexpected Host or Port"));
 						}
-					
+
 						try
 						{
 							dataPacket = transferTftp_.bufferedReceive();
@@ -566,7 +567,7 @@ public class TFTPBaseServer implements Runnable
 							timeoutCount++;
                         }
 					}
-					
+
 					if (dataPacket != null && dataPacket instanceof TFTPWriteRequestPacket)
 					{
 						//it must have missed our initial ack.  Send another.
@@ -587,21 +588,21 @@ public class TFTPBaseServer implements Runnable
 						byte[] data = ((TFTPDataPacket)dataPacket).getData();
 						int dataLength = ((TFTPDataPacket)dataPacket).getDataLength();
 						int dataOffset = ((TFTPDataPacket)dataPacket).getDataOffset();
-						
+
 						if (block > lastBlock || (lastBlock == 65535 && block == 0))
 						{
 							//it might resend a data block if it missed our ack - don't rewrite the block.
 							bos.write(data, dataOffset, dataLength);
 							lastBlock = block;
 						}
-						
+
 						lastSentAck = new TFTPAckPacket(twrp.getAddress(), twrp.getPort(), block);
 						transferTftp_.bufferedSend(lastSentAck);
 						if (dataLength < TFTPDataPacket.MAX_DATA_LENGTH)
 						{
-							//end of stream signal - The tranfer is complete. 
+							//end of stream signal - The tranfer is complete.
 							bos.close();
-							
+
 							//But my ack may be lost - so listen to see if I need to resend the ack.
 							for (int i = 0; i < maxTimeoutRetries_; i++)
 							{
@@ -614,7 +615,7 @@ public class TFTPBaseServer implements Runnable
 									//this is the expected route - the client shouldn't be sending any more packets.
 									break;
 								}
-								
+
 								if (dataPacket != null && (!dataPacket.getAddress().equals(twrp.getAddress()) || dataPacket.getPort() != twrp.getPort()))
 								{
 									//make sure it was from the right client...
@@ -626,7 +627,7 @@ public class TFTPBaseServer implements Runnable
 									transferTftp_.bufferedSend(lastSentAck);
 								}
 							}
-							
+
 							//all done.
 							break;
 						}
