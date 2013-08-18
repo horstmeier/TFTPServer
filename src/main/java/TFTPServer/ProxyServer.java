@@ -9,9 +9,6 @@ import org.apache.log4j.PatternLayout;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/**
- * Created by jens on 17.08.13.
- */
 public class ProxyServer {
     public static void main(String[] args) {
 

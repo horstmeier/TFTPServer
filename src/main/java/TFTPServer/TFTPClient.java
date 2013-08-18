@@ -2,9 +2,6 @@ package TFTPServer;
 
 import java.io.FileOutputStream;
 
-/**
- * Created by jens on 17.08.13.
- */
 public class TFTPClient {
     public static void main(String[] args) {
         if (args.length != 4) {
