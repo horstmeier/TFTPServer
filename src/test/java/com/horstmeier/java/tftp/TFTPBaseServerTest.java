@@ -1,6 +1,7 @@
 package com.horstmeier.java.tftp;
 
 import com.horstmeier.java.tftp.interfaces.IFileNameMapper;
+import junit.framework.TestCase;
 import org.apache.commons.net.tftp.TFTPClient;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -8,10 +9,7 @@ import org.apache.log4j.PatternLayout;
 
 import java.io.*;
 
-/**
- * Created by jens on 17.08.13.
- */
-public class TFTPBaseServerTest {
+public class TFTPBaseServerTest extends TestCase {
 
     class TestFileMapperRead implements IFileNameMapper {
 
