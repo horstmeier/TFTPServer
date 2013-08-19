@@ -22,5 +22,5 @@ You need some code like this to use the ProxyFileMapper:
     ProxyFileMapper proxyFileMapper = new ProxyFileMapper("http://google.com/");
     TFTPBaseServer baseServer = new TFTPBaseServer(proxyFileMapper, 8089);
 
-Now all TFTP requests for a file named "x/y/z" will be mapped to the http://google.com/x/y/z. (Please don't use
+Now all TFTP requests for a file named "x/y/z" will be mapped to http://google.com/x/y/z. (Please don't use
 google.com in your production code. This address was only used as a neutral address for demonstration purposes)
